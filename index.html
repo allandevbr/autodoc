@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma ETL SAT - Lummi BI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-deep: #040c1a;
+            --bg-surface: #0a162e;
+            --bg-card: #0f1f3d;
+            --lummi-blue: #0057d9;
+            --lummi-cyan: #00d4ff;
+            --lummi-light: #4d94ff;
+            --text-title: #ffffff;
+            --text-body: #e8edf5;
+            --text-muted: #8fa3c0;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(0, 212, 255, 0.3);
+            --bronze: #d97706;
+            --silver: #94a3b8;
+            --gold: #fbbf24;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background-color: var(--bg-deep); color: var(--text-body); line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+        .bg-mesh { position: fixed; inset: 0; z-index: -2; pointer-events: none; background: radial-gradient(circle at 15% 50%, rgba(0, 87, 217, 0.08), transparent 40%), radial-gradient(circle at 85% 10%, rgba(0, 212, 255, 0.05), transparent 40%); }
+        .bg-grid { position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px); background-size: 80px 80px; opacity: 0.5; mask-image: linear-gradient(to bottom, black 20%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%); }
+
+        nav { position: fixed; top: 0; width: 100%; z-index: 100; background: rgba(4, 12, 26, 0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-subtle); padding: 12px 0; }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+
+        /* FIX LOGO CABEÇALHO */
+        .logo-svg { width: 40px; height: 40px; background: linear-gradient(135deg, var(--lummi-light), var(--lummi-blue)); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 87, 217, 0.3); flex-shrink: 0; }
+        .logo-svg svg { width: 24px; height: 24px; display: block; }
+
+        .brand-text { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--text-title); letter-spacing: -0.02em; }
+        .brand-text span { color: var(--lummi-cyan); font-weight: 400; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-left: 2px; }
+        .nav-badge { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--lummi-light); background: rgba(0, 87, 217, 0.15); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(0, 87, 217, 0.3); }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+        section { padding: 90px 0; border-bottom: 1px solid var(--border-subtle); }
+        .hero { padding: 180px 0 60px; text-align: center; }
+        .hero-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--lummi-cyan); margin-bottom: 24px; }
+        .hero-tag .dot { width: 6px; height: 6px; background: var(--lummi-cyan); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        .hero h1 { font-family: 'Nunito', sans-serif; font-size: clamp(2.8rem, 5vw, 4.2rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 24px; color: var(--text-title); }
+        .hero h1 span { background: linear-gradient(90deg, var(--lummi-light), var(--lummi-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 1.1rem; color: var(--text-muted); max-width: 680px; margin: 0 auto 60px; font-weight: 300; line-height: 1.8; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border-subtle); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        .stat-card { background: var(--bg-surface); padding: 32px 24px; text-align: center; transition: background 0.3s; }
+        .stat-card:hover { background: rgba(0, 87, 217, 0.05); }
+        .stat-val { font-family: 'Nunito', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text-title); line-height: 1; margin-bottom: 8px; display: block; }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--lummi-cyan); font-weight: 700; margin-bottom: 6px; display: block; }
+        .stat-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; display: block; }
+
+        .sec-header { margin-bottom: 48px; }
+        .sec-kicker { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--lummi-light); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+        .sec-kicker::before { content: ''; width: 24px; height: 1px; background: var(--lummi-light); }
+        .sec-title { font-family: 'Nunito', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--text-title); letter-spacing: -0.02em; }
+        .sec-title em { font-style: normal; color: var(--lummi-cyan); }
+
+        .medallion-flex { display: flex; gap: 24px; align-items: stretch; }
+        @media (max-width: 850px) { .medallion-flex { flex-direction: column; } .medallion-arrow { transform: rotate(90deg); margin: 10px 0; } }
+        .med-card { flex: 1; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 32px 24px; position: relative; transition: transform 0.3s, border-color 0.3s; }
+        .med-card:hover { transform: translateY(-4px); }
+        .med-card.bronze { border-top: 3px solid var(--bronze); }
+        .med-card.silver { border-top: 3px solid var(--silver); }
+        .med-card.gold { border-top: 3px solid var(--gold); }
+        .med-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; }
+        .med-badge.bronze { background: rgba(217, 119, 6, 0.15); color: var(--bronze); }
+        .med-badge.silver { background: rgba(148, 163, 184, 0.15); color: var(--silver); }
+        .med-badge.gold { background: rgba(251, 191, 36, 0.15); color: var(--gold); }
+        .med-card h3 { font-family: 'Nunito', sans-serif; font-size: 1.2rem; margin-bottom: 12px; color: var(--text-title); }
+        .med-card p { font-size: 0.9rem; color: var(--text-muted); }
+        .medallion-arrow { display: flex; align-items: center; justify-content: center; color: var(--text-muted); opacity: 0.5; font-size: 1.2rem; }
+
+        .scripts-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .script-item { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; transition: border-color 0.3s; cursor: pointer; }
+        .script-item:hover { border-color: rgba(255, 255, 255, 0.15); }
+        .script-item.active { border-color: var(--border-hover); background: rgba(0, 87, 217, 0.03); }
+        .script-header { padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; }
+        .script-info { display: flex; align-items: center; gap: 20px; }
+        .script-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(0, 87, 217, 0.1); border: 1px solid rgba(0, 87, 217, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--lummi-light); }
+        .script-name { font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text-title); }
+        .script-desc { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+        .chevron { color: var(--text-muted); transition: transform 0.4s ease; }
+        .script-item.active .chevron { transform: rotate(180deg); color: var(--lummi-cyan); }
+        .script-content { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .script-inner { padding: 0 32px 32px 88px; }
+        .feature-list { list-style: none; }
+        .feature-list li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; font-size: 0.95rem; color: var(--text-muted); }
+        .feature-list i { color: var(--lummi-light); font-size: 0.7rem; margin-top: 6px; }
+
+        .bi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 768px) { .bi-grid { grid-template-columns: 1fr; } }
+        .bi-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 40px; position: relative; overflow: hidden; }
+        .bi-card::after { content: ''; position: absolute; top: 0; right: 0; width: 250px; height: 250px; background: radial-gradient(circle, rgba(0, 212, 255, 0.05), transparent 70%); border-radius: 50%; pointer-events: none; }
+        .bi-icon { font-size: 2rem; color: var(--lummi-cyan); margin-bottom: 24px; }
+        .bi-card h3 { font-family: 'Nunito', sans-serif; font-size: 1.4rem; color: var(--text-title); margin-bottom: 16px; }
+        .bi-card p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 24px; }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; } .delay-2 { transition-delay: 0.2s; }
+
+        footer { text-align: center; padding: 60px 0; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border-subtle); }
+        .footer-logo { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--text-title); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .footer-logo span { color: var(--lummi-cyan); }
+    </style>
+</head>
+<body>
+
+    <div class="bg-mesh"></div>
+    <div class="bg-grid"></div>
+
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="brand">
+                <div class="logo-svg">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 15 7 15s7-9.75 7-15c0-3.87-3.13-7-7-7z" fill="#FFFFFF"/>
+                        <path d="M12 5L12.8 7.2L15 8L12.8 8.8L12 11L11.2 8.8L9 8L11.2 7.2L12 5Z" fill="#0057D9"/>
+                    </svg>
+                </div>
+                <span class="brand-text">lummi<span>BI</span></span>
+            </a>
+            <span class="nav-badge">Produto de Dados</span>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <div class="hero-tag reveal"><div class="dot"></div> Processamento Ativo e Monitorado</div>
+            <h1 class="reveal delay-1">Automação de Inconsistências <br><span>SAT SC — Lummi BI</span></h1>
+            <p class="reveal delay-2">Uma plataforma de engenharia de dados que elimina tarefas manuais, orquestra a captura de malhas fiscais e constrói um histórico cravado para tomada de decisão gerencial no Power BI.</p>
+            
+            <div class="stats-grid reveal delay-2">
+                <div class="stat-card">
+                    <span class="stat-val">100%</span>
+                    <span class="stat-label">Autônomo</span>
+                    <span class="stat-desc">Fim do trabalho e extração manual no portal do governo.</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val">Risco 0</span>
+                    <span class="stat-label">Governança Total</span>
+                    <span class="stat-desc">Dados padronizados e sem margem para erro humano.</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val">Total</span>
+                    <span class="stat-label">Memória Fiscal</span>
+                    <span class="stat-desc">O histórico que some do SAT fica salvo para sempre no Lake.</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val">D-0</span>
+                    <span class="stat-label">Painéis Up-to-Date</span>
+                    <span class="stat-desc">Informação fresca pronta para consumo diário no Power BI.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section>
+        <div class="container">
+            <div class="sec-header reveal">
+                <div class="sec-kicker">Arquitetura Corporativa</div>
+                <h2 class="sec-title">Medallion <em>Architecture</em></h2>
+            </div>
+            
+            <div class="medallion-flex">
+                <div class="med-card bronze reveal">
+                    <span class="med-badge bronze"><i class="fas fa-circle" style="font-size: 5px;"></i> Bronze</span>
+                    <h3>Raw Data (Cópia Fiel)</h3>
+                    <p>Captura bruta dos relatórios. Os arquivos originais do governo são preservados com data e hora exatas da extração, garantindo trilha de auditoria infalível.</p>
+                </div>
+                <div class="medallion-arrow reveal"><i class="fas fa-arrow-right"></i></div>
+                <div class="med-card silver reveal delay-1">
+                    <span class="med-badge silver"><i class="fas fa-circle" style="font-size: 5px;"></i> Silver</span>
+                    <h3>Clean Data (Governança)</h3>
+                    <p>Tratamento inteligente de falhas estruturais do Excel. Os dados são limpos, tipados (moedas e datas) e mapeados corretamente às suas respectivas malhas.</p>
+                </div>
+                <div class="medallion-arrow reveal delay-1"><i class="fas fa-arrow-right"></i></div>
+                <div class="med-card gold reveal delay-2">
+                    <span class="med-badge gold"><i class="fas fa-circle" style="font-size: 5px;"></i> Gold</span>
+                    <h3>Business Data (Pronto)</h3>
+                    <p>Consolidação analítica. Uma base única e performática alimentada de forma incremental, blindada contra duplicidades e pronta para gerar insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <div class="sec-header reveal">
+                <div class="sec-kicker">Motor de Processamento</div>
+                <h2 class="sec-title">A Lógica <em>Por Trás</em></h2>
+            </div>
+            <div class="scripts-grid">
+                <div class="script-item reveal" onclick="toggleAccordion(this)">
+                    <div class="script-header">
+                        <div class="script-info">
+                            <div class="script-icon"><i class="fas fa-robot"></i></div>
+                            <div>
+                                <div class="script-name">Estágio 1: Automação de Coleta (RPA)</div>
+                                <div class="script-desc">Substituição do trabalho humano repetitivo</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="script-content"><div class="script-inner"><ul class="feature-list"><li><i class="fas fa-check"></i> Execução em background simulando a navegação humana nas telas legadas do SAT.</li><li><i class="fas fa-check"></i> Sistema resiliente que aguarda e recarrega a página caso o servidor do governo esteja lento.</li><li><i class="fas fa-check"></i> Download autônomo e direcionamento preciso para o repositório correto da empresa.</li></ul></div></div>
+                </div>
+                <div class="script-item reveal delay-1" onclick="toggleAccordion(this)">
+                    <div class="script-header">
+                        <div class="script-info"><div class="script-icon"><i class="fas fa-layer-group"></i></div><div><div class="script-name">Estágio 2: Parsing e Estruturação</div><div class="script-desc">Conversão de relatórios bagunçados em tabelas úteis</div></div></div><i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="script-content"><div class="script-inner"><ul class="feature-list"><li><i class="fas fa-check"></i> Leitura inteligente que ignora cabeçalhos visuais e localiza o início real das tabelas (CNPJ).</li><li><i class="fas fa-check"></i> Engenharia reversa que "sobe" na planilha para recuperar o nome da malha que fica solto no Excel.</li><li><i class="fas fa-check"></i> Transformação de um arquivo difícil de ler em uma matriz de dados formatada para sistemas.</li></ul></div></div>
+                </div>
+                <div class="script-item reveal" onclick="toggleAccordion(this)">
+                    <div class="script-header">
+                        <div class="script-info"><div class="script-icon"><i class="fas fa-shield-halved"></i></div><div><div class="script-name">Estágio 3: Qualidade e Higienização</div><div class="script-desc">Garantia de que o BI não vai "quebrar"</div></div></div><i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="script-content"><div class="script-inner"><ul class="feature-list"><li><i class="fas fa-check"></i> Padronização universal de colunas, resolvendo as inconsistências que a SEF/SC gera nos exports.</li><li><i class="fas fa-check"></i> Tratamento financeiro profundo: converte textos errados de moeda em números validados (R$).</li><li><i class="fas fa-check"></i> Aplicação de um carimbo de data (Timestamp) para permitir o acompanhamento da vida útil do problema.</li></ul></div></div>
+                </div>
+                <div class="script-item reveal delay-1" onclick="toggleAccordion(this)">
+                    <div class="script-header">
+                        <div class="script-info"><div class="script-icon"><i class="fas fa-server"></i></div><div><div class="script-name">Estágio 4: Consolidação e Histórico</div><div class="script-desc">Memória eterna e otimização para nuvem</div></div></div><i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="script-content"><div class="script-inner"><ul class="feature-list"><li><i class="fas fa-check"></i> Combina a base histórica antiga com as novas extrações do dia em um só movimento inteligente.</li><li><i class="fas fa-check"></i> Criação de "Identidade Única" para a malha, impedindo que o mesmo problema seja somado duas vezes.</li><li><i class="fas fa-check"></i> Proteção de dados: se a SEF/SC apagar a malha do portal deles, o nosso histórico é preservado.</li></ul></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <div class="sec-header reveal">
+                <div class="sec-kicker">Entrega de Valor</div>
+                <h2 class="sec-title">Integração <em>Power BI</em></h2>
+            </div>
+            <div class="bi-grid">
+                <div class="bi-card reveal">
+                    <i class="fas fa-bolt bi-icon"></i>
+                    <h3>Performance Máxima</h3>
+                    <p>Ao tirar a responsabilidade de tratamento do Power Query e passar para a Engenharia de Dados, o Power BI Service apenas "lê" a base pronta. Isso garante uma sincronização quase instantânea e painéis que não travam o navegador do cliente.</p>
+                </div>
+                <div class="bi-card reveal delay-1">
+                    <i class="fas fa-cloud-arrow-up bi-icon"></i>
+                    <h3>Sincronização 100% Autônoma</h3>
+                    <p>Uma esteira orquestrada. O Agendador do Windows roda a extração, o OneDrive/SharePoint recebe a carga silenciosamente na nuvem e o Power BI exibe a informação atualizada para a diretoria, tudo sem a necessidade de intervenção humana.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">
+                <div class="logo-svg" style="width: 30px; height: 30px; background: none; box-shadow: none; border-radius: 0;">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 15 7 15s7-9.75 7-15c0-3.87-3.13-7-7-7z" fill="#8fa3c0"/>
+                        <path d="M12 5L12.8 7.2L15 8L12.8 8.8L12 11L11.2 8.8L9 8L11.2 7.2L12 5Z" fill="#0057D9"/>
+                    </svg>
+                </div>
+                lummi<span>BI</span>
+            </div>
+            <p>Engenharia de Dados & Business Intelligence Corporativo.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleAccordion(element) {
+            const content = element.querySelector('.script-content');
+            const isActive = element.classList.contains('active');
+            document.querySelectorAll('.script-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('.script-content').style.maxHeight = null;
+            });
+            if (!isActive) {
+                element.classList.add('active');
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        }
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
